@@ -23,7 +23,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect((err) => {
     console.log(err);
     const blogCollection = client.db("redium").collection("blog");
-
+    const adminCollection = client.db("cleanzo").collection("admin");
 
     // Add data to database 
 
@@ -57,17 +57,46 @@ client.connect((err) => {
         });
     });
 
+// Delete Blog
+
+app.delete('/blogs/:id', (req, res) => {
+    const id = ObjectID(req.params.id);
+ 
+    blogCollection.findOneAndDelete({ _id: id })
+      .then(result => {
+        res.json({ success: !!result.value })
+      })
+      .then(error => {
+        console.log(error);
+      })
+  });
+
+
+  // Make Admin 
+  app.post('/addAdmin', (req, res) => {
+    const data = req.body;
+    adminCollection.insertOne(data).then((result) => {
+      res.send(result.insertedCount > 0);
+    });
+  });
+ 
+  // Admin Filter 
+  app.post('/isAdmin', (req, res) => {
+    const email = req.body.email;
+    adminCollection.find({ email: email }).toArray((error, documents) => {
+      res.send(documents.length > 0);
+    });
+  });
+ 
+
+
 
 });
 
 
-
-
-
 app.get('/', (req, res) => {
-    res.send('Hello')
+    res.send('Hello I am listening ')
 })
-
 
 
 
